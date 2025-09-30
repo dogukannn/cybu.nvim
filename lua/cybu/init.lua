@@ -62,6 +62,13 @@ cybu.setup = function(user_config)
       end,
     })
   end
+
+  -- Setup persistent UI mode
+  if c.opts.behavior.persistent_ui.enabled then
+    _state.persistent_ui_enabled = true
+    _state.persistent_ui_timeout = c.opts.behavior.persistent_ui.timeout
+    _state.persistent_ui_active = false
+  end
 end
 
 cybu.get_bufs = function()
@@ -448,12 +455,26 @@ cybu.show_cybu_win = function()
   if _state.cybu_win_timer then
     _state.cybu_win_timer:stop()
   end
-  _state.cybu_win_timer = vim.defer_fn(function()
-    if _state.switch_on_close then
-      cybu.load_target_buf()
-    end
-    close_cybu_win()
-  end, c.opts.display_time)
+  
+  -- Set timer based on mode
+  if _state.persistent_ui_active then
+    -- In persistent UI mode, use longer timeout and reset timer on each cycle
+    _state.cybu_win_timer = vim.defer_fn(function()
+      if _state.switch_on_close or _state.switch_on_key_release then
+        cybu.load_target_buf()
+      end
+      close_cybu_win()
+      _state.persistent_ui_active = false
+    end, _state.persistent_ui_timeout or 2000)
+  elseif not _state.switch_on_key_release then
+    -- Normal mode with standard timeout
+    _state.cybu_win_timer = vim.defer_fn(function()
+      if _state.switch_on_close then
+        cybu.load_target_buf()
+      end
+      close_cybu_win()
+    end, c.opts.display_time)
+  end
 end
 
 cybu.populate_state = function(args)
@@ -464,6 +485,10 @@ cybu.populate_state = function(args)
   _state.switch_on_close = c.opts.behavior.mode.default.switch == v.behavior.switch_mode.on_close
       and _state.mode == v.mode.default
     or c.opts.behavior.mode.last_used.switch == v.behavior.switch_mode.on_close and _state.mode == v.mode.last_used
+
+  _state.switch_on_key_release = c.opts.behavior.mode.default.switch == v.behavior.switch_mode.on_key_release
+      and _state.mode == v.mode.default
+    or c.opts.behavior.mode.last_used.switch == v.behavior.switch_mode.on_key_release and _state.mode == v.mode.last_used
 
   _state.current_buf = vim.api.nvim_get_current_buf()
   _state.increment = _state.direction == v.direction.next and 1 or -1
@@ -491,6 +516,72 @@ cybu.populate_state = function(args)
   return true
 end
 
+--- Setup persistent UI monitoring
+cybu.setup_persistent_ui_monitoring = function()
+  if not _state.persistent_ui_enabled then
+    return
+  end
+
+  -- Setup autocmd to detect when user does any other action and close UI
+  vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI", "InsertEnter", "CmdlineEnter" }, {
+    group = vim.api.nvim_create_augroup("cybu#persistent_ui_detection", { clear = true }),
+    callback = function()
+      if _state.persistent_ui_active and _state.cybu_win_id then
+        -- Small delay to avoid immediate closure during cycling
+        vim.defer_fn(function()
+          if _state.persistent_ui_active and _state.cybu_win_id then
+            cybu.handle_persistent_ui_close()
+          end
+        end, 100)
+      end
+    end,
+  })
+end
+
+--- Handle key release event
+cybu.handle_key_release = function()
+  _state.key_release_active = false
+  if _state.cybu_win_timer then
+    _state.cybu_win_timer:stop()
+  end
+  
+  -- Switch to target buffer and close window
+  if _state.switch_on_close then
+    cybu.load_target_buf()
+  end
+  
+  local function close_cybu_win()
+    pcall(vim.api.nvim_win_close, _state.cybu_win_id, true)
+    vim.api.nvim_exec_autocmds("User", { pattern = "CybuClose" })
+    _state.cybu_win_id = nil
+    _state.focus = nil
+  end
+  
+  close_cybu_win()
+end
+
+--- Handle persistent UI close
+cybu.handle_persistent_ui_close = function()
+  _state.persistent_ui_active = false
+  if _state.cybu_win_timer then
+    _state.cybu_win_timer:stop()
+  end
+  
+  -- Switch to target buffer and close window
+  if _state.switch_on_close or _state.switch_on_key_release then
+    cybu.load_target_buf()
+  end
+  
+  local function close_cybu_win()
+    pcall(vim.api.nvim_win_close, _state.cybu_win_id, true)
+    vim.api.nvim_exec_autocmds("User", { pattern = "CybuClose" })
+    _state.cybu_win_id = nil
+    _state.focus = nil
+  end
+  
+  close_cybu_win()
+end
+
 --- Function to trigger buffer cycling into {direction}.
 -- @usage require'cybu'.cycle(direction)
 -- @param direction string: 'next' or 'prev'
@@ -508,7 +599,14 @@ cybu.cycle = function(direction, mode)
   if not cybu.populate_state() then
     return
   end
-  if not _state.switch_on_close then
+
+  -- Setup persistent UI monitoring if enabled
+  if _state.persistent_ui_enabled and (_state.switch_on_close or _state.switch_on_key_release) then
+    _state.persistent_ui_active = true
+    cybu.setup_persistent_ui_monitoring()
+  end
+
+  if not _state.switch_on_close and not _state.switch_on_key_release then
     cybu.load_target_buf()
   end
   cybu.show_cybu_win()

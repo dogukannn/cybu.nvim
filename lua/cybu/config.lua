@@ -51,6 +51,10 @@ local default_config = {
       },
     },
     show_on_autocmd = false,
+    persistent_ui = {
+      enabled = false,
+      timeout = 2000,  -- ms to wait for next cycle before closing
+    },
   },
   experimental = {
     buffer_provider = nil,
