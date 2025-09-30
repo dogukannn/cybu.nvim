@@ -114,7 +114,6 @@ The table below contains all config keys with some exemplary values.
       show_on_autocmd = false,      -- event to trigger cybu (eg. "BufEnter")
       persistent_ui = {             -- Visual Studio-like persistent UI
         enabled = false,            -- enable persistent UI mode
-        timeout = 2000,             -- timeout in ms before auto-close
       },
     },
     display_time = 750,             -- time in ms the cybu win is displayed
@@ -154,7 +153,6 @@ To enable persistent UI mode:
         },
         persistent_ui = {
           enabled = true,
-          timeout = 2000,  -- UI stays open for 2 seconds of inactivity
         },
       },
     })
@@ -173,9 +171,8 @@ Keymaps for Ctrl+Tab behavior:
 
 How it works:
 - Press Ctrl+Tab to open the cybu UI and cycle to the next buffer
-- The UI stays open as you continue cycling with Ctrl+Tab/Ctrl+Shift+Tab
-- The UI automatically closes after the timeout period (default 2 seconds)
-- Any other action (cursor movement, insert mode, etc.) also closes the UI
+- The UI stays open as you continue holding Ctrl and pressing Tab/Shift+Tab
+- When you release Ctrl (or perform any other action), the UI closes immediately
 - When the UI closes, it switches to the currently selected buffer
 
 ================================================================================

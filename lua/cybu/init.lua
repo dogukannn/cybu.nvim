@@ -66,7 +66,6 @@ cybu.setup = function(user_config)
   -- Setup persistent UI mode
   if c.opts.behavior.persistent_ui.enabled then
     _state.persistent_ui_enabled = true
-    _state.persistent_ui_timeout = c.opts.behavior.persistent_ui.timeout
     _state.persistent_ui_active = false
   end
 end
@@ -457,17 +456,10 @@ cybu.show_cybu_win = function()
   end
   
   -- Set timer based on mode
-  if _state.persistent_ui_active then
-    -- In persistent UI mode, use longer timeout and reset timer on each cycle
-    _state.cybu_win_timer = vim.defer_fn(function()
-      if _state.switch_on_close or _state.switch_on_key_release then
-        cybu.load_target_buf()
-      end
-      close_cybu_win()
-      _state.persistent_ui_active = false
-    end, _state.persistent_ui_timeout or 2000)
-  elseif not _state.switch_on_key_release then
-    -- Normal mode with standard timeout
+  -- For on_key_release mode (persistent UI), no timeout is used
+  -- The window will only close when handle_key_release() or handle_persistent_ui_close() is called
+  if not _state.switch_on_key_release and not _state.persistent_ui_active then
+    -- Normal mode with standard timeout (only for immediate/on_close modes)
     _state.cybu_win_timer = vim.defer_fn(function()
       if _state.switch_on_close then
         cybu.load_target_buf()
@@ -527,12 +519,8 @@ cybu.setup_persistent_ui_monitoring = function()
     group = vim.api.nvim_create_augroup("cybu#persistent_ui_detection", { clear = true }),
     callback = function()
       if _state.persistent_ui_active and _state.cybu_win_id then
-        -- Small delay to avoid immediate closure during cycling
-        vim.defer_fn(function()
-          if _state.persistent_ui_active and _state.cybu_win_id then
-            cybu.handle_persistent_ui_close()
-          end
-        end, 100)
+        -- Close immediately when user does other actions
+        cybu.handle_persistent_ui_close()
       end
     end,
   })

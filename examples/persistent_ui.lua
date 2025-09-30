@@ -22,11 +22,8 @@ cybu.setup({
     -- Enable persistent UI mode
     persistent_ui = {
       enabled = true,
-      timeout = 2000,  -- UI stays open for 2 seconds of inactivity (in ms)
     },
   },
-  -- Increase display time for better experience with persistent UI
-  display_time = 1500,
 })
 
 -- Keymaps for Visual Studio-like Ctrl+Tab behavior
@@ -52,13 +49,12 @@ end, { desc = "Previous buffer (persistent UI, default mode)" })
 How it works:
 
 1. When you press Ctrl+Tab, the cybu UI opens showing all buffers
-2. The UI stays open as long as you keep cycling with Ctrl+Tab/Ctrl+Shift+Tab
-3. The UI automatically closes after 2 seconds of inactivity (configurable)
+2. The UI stays open as long as you keep holding Ctrl and cycling with Tab/Shift+Tab
+3. When you release Ctrl (or perform any other action), the UI closes immediately
 4. When the UI closes, it switches to the selected buffer
-5. Any other action (cursor movement, entering insert mode, etc.) also closes the UI
 
 This provides a Visual Studio-like experience where you can:
 - Press and hold Ctrl, then tap Tab repeatedly to cycle through buffers
 - See all available buffers while cycling
-- Release Ctrl (or wait/do other actions) to switch to the selected buffer
+- Release Ctrl to immediately switch to the selected buffer (no delay)
 --]]

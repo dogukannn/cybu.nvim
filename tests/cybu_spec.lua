@@ -512,7 +512,6 @@ describe("Persistent UI behavior:", function()
         },
         persistent_ui = {
           enabled = true,
-          timeout = 1000,
         },
       },
     })
@@ -534,7 +533,6 @@ describe("Persistent UI behavior:", function()
         },
         persistent_ui = {
           enabled = true,
-          timeout = 1000,
         },
       },
     })
