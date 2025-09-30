@@ -6,7 +6,6 @@ vars.behavior = {
   switch_mode = {
     immediate = "immediate",
     on_close = "on_close",
-    on_key_release = "on_key_release",
   },
   view_type = {
     rolling = "rolling",
