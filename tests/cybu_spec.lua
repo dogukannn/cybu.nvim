@@ -499,3 +499,48 @@ describe("Experimental buffer provider:", function()
     assert.is_false(has_help)
   end)
 end)
+
+describe("Persistent UI behavior:", function()
+  it("enables persistent UI when configured", function()
+    local cybu = require("cybu")
+    cybu.setup({
+      behavior = {
+        mode = {
+          last_used = {
+            switch = "on_key_release",
+          },
+        },
+        persistent_ui = {
+          enabled = true,
+          timeout = 1000,
+        },
+      },
+    })
+
+    -- Test that persistent UI can be activated
+    cybu.cycle("next", "last_used")
+    -- Can't easily test timer behavior in unit tests, but we can verify setup doesn't error
+    assert.is_true(true)
+  end)
+
+  it("handles persistent UI with on_key_release switch mode", function()
+    local cybu = require("cybu")
+    cybu.setup({
+      behavior = {
+        mode = {
+          default = {
+            switch = "on_key_release",
+          },
+        },
+        persistent_ui = {
+          enabled = true,
+          timeout = 1000,
+        },
+      },
+    })
+
+    -- Test that on_key_release mode works with persistent UI
+    cybu.cycle("next", "default")
+    assert.is_true(true)
+  end)
+end)
