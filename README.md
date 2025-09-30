@@ -192,7 +192,7 @@ end, { desc = "Previous buffer (persistent UI)" })
 - Press `Ctrl+Tab` to open the UI and cycle to the next buffer
 - The UI stays open as you continue pressing `Ctrl+Tab`/`Ctrl+Shift+Tab`
 - The UI automatically closes after the timeout period (default 2 seconds)
-- Any other action (cursor movement, insert mode, etc.) also closes the UI
+- Any other action (cursor movement, insert mode, etc.) immediately closes the UI
 - When the UI closes, it switches to the currently selected buffer
 
 See [`examples/persistent_ui.lua`](examples/persistent_ui.lua) for a complete configuration example.

@@ -527,12 +527,7 @@ cybu.setup_persistent_ui_monitoring = function()
     group = vim.api.nvim_create_augroup("cybu#persistent_ui_detection", { clear = true }),
     callback = function()
       if _state.persistent_ui_active and _state.cybu_win_id then
-        -- Small delay to avoid immediate closure during cycling
-        vim.defer_fn(function()
-          if _state.persistent_ui_active and _state.cybu_win_id then
-            cybu.handle_persistent_ui_close()
-          end
-        end, 100)
+        cybu.handle_persistent_ui_close()
       end
     end,
   })
