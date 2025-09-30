@@ -129,7 +129,6 @@ require("cybu").setup({
     show_on_autocmd = false,      -- event to trigger cybu (eg. "BufEnter")
     persistent_ui = {             -- Visual Studio-like persistent UI
       enabled = false,            -- enable persistent UI mode
-      timeout = 2000,             -- timeout in ms before auto-close
     },
   },
   display_time = 750,             -- time the cybu window is displayed
@@ -173,7 +172,6 @@ require("cybu").setup({
     },
     persistent_ui = {
       enabled = true,
-      timeout = 2000,  -- UI stays open for 2 seconds of inactivity
     },
   },
 })
@@ -190,9 +188,8 @@ end, { desc = "Previous buffer (persistent UI)" })
 
 **How it works:**
 - Press `Ctrl+Tab` to open the UI and cycle to the next buffer
-- The UI stays open as you continue pressing `Ctrl+Tab`/`Ctrl+Shift+Tab`
-- The UI automatically closes after the timeout period (default 2 seconds)
-- Any other action (cursor movement, insert mode, etc.) also closes the UI
+- The UI stays open as you continue holding `Ctrl` and pressing `Tab`/`Shift+Tab`
+- When you release `Ctrl` (or perform any other action), the UI closes immediately
 - When the UI closes, it switches to the currently selected buffer
 
 See [`examples/persistent_ui.lua`](examples/persistent_ui.lua) for a complete configuration example.
