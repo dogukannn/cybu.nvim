@@ -1,12 +1,8 @@
 # Cybu.nvim
 
-**_Cy_**[cle]**_bu_**[ffer]**_.nvim_** provides buffer cycling with contextual preview windows. It offers multiple modes for different workflows:
+**_Cy_**[cle]**_bu_**[ffer]**_.nvim_** provides two modes. The first is essentially a wrapper around `:bnext` & `:bprevious`, which adds a customizable notification window, that shows the buffer in focus and its neighbors, to provide context when cycling the buffer list with the provided plugin commands / key bindings.
 
-1. **Default mode**: A wrapper around `:bnext` & `:bprevious` with a customizable notification window showing the buffer in focus and its neighbors.
-
-2. **Last-used mode**: Shows the same contextual window, but with buffers ordered by last used - similar to `[Ctrl] + [Tab]` functionality in web browsers.
-
-3. **Persistent UI mode**: Visual Studio-like behavior where the UI stays open while cycling, allowing you to preview multiple buffers before selecting one.
+The second mode adds the same customizable window providing context, but the list of buffers is ordered by last used. It is more akin to the `[Ctrl] + [Tab]` functionality a web browser might provide.
 
 See [:help cybu.nvim](https://github.com/ghillb/cybu.nvim/blob/main/doc/cybu.nvim.txt) for the docs.
 
@@ -114,11 +110,11 @@ require("cybu").setup({
   behavior = {                    -- set behavior for different modes
     mode = {
       default = {
-        switch = "immediate",     -- immediate, on_close, on_key_release
+        switch = "immediate",     -- immediate, on_close
         view = "rolling",         -- paging, rolling
       },
       last_used = {
-        switch = "on_close",      -- immediate, on_close, on_key_release
+        switch = "on_close",      -- immediate, on_close
         view = "paging",          -- paging, rolling
         update_on = "buf_enter",  -- buf_enter, cursor_moved
       },
@@ -127,10 +123,6 @@ require("cybu").setup({
       },
     },
     show_on_autocmd = false,      -- event to trigger cybu (eg. "BufEnter")
-    persistent_ui = {             -- Visual Studio-like persistent UI
-      enabled = false,            -- enable persistent UI mode
-      timeout = 2000,             -- timeout in ms before auto-close
-    },
   },
   display_time = 750,             -- time the cybu window is displayed
   exclude = {                     -- filetypes, cybu will not be active
@@ -155,47 +147,6 @@ require("cybu").setup({
 - Exclude filetypes and define fallback
 - Autocmd events `CybuOpen` & `CybuClose`
 - Trigger context window on arbitrary autocommand events
-- **Persistent UI Mode**: Visual Studio-like Ctrl+Tab behavior
-
-### Persistent UI Mode (Visual Studio-like Ctrl+Tab)
-
-Cybu supports a persistent UI mode that keeps the buffer selection window open while you cycle through buffers, similar to Visual Studio's Ctrl+Tab behavior.
-
-```lua
-require("cybu").setup({
-  behavior = {
-    mode = {
-      last_used = {
-        switch = "on_key_release",  -- Required for persistent UI
-        view = "paging",
-        update_on = "buf_enter",
-      },
-    },
-    persistent_ui = {
-      enabled = true,
-      timeout = 2000,  -- UI stays open for 2 seconds of inactivity
-    },
-  },
-})
-
--- Keymaps for Ctrl+Tab behavior
-vim.keymap.set("n", "<C-Tab>", function()
-  require("cybu").cycle("next", "last_used")
-end, { desc = "Next buffer (persistent UI)" })
-
-vim.keymap.set("n", "<C-S-Tab>", function()
-  require("cybu").cycle("prev", "last_used")  
-end, { desc = "Previous buffer (persistent UI)" })
-```
-
-**How it works:**
-- Press `Ctrl+Tab` to open the UI and cycle to the next buffer
-- The UI stays open as you continue pressing `Ctrl+Tab`/`Ctrl+Shift+Tab`
-- The UI automatically closes after the timeout period (default 2 seconds)
-- Any other action (cursor movement, insert mode, etc.) also closes the UI
-- When the UI closes, it switches to the currently selected buffer
-
-See [`examples/persistent_ui.lua`](examples/persistent_ui.lua) for a complete configuration example.
 
 ### Advanced: Cursor Movement Based MRU
 
